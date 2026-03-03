@@ -607,6 +607,19 @@ do_install() {
   first_run_hint
 }
 
+do_update() {
+  need_root
+  say "停服..."
+  systemctl stop "${SERVICE_NAME}.service" || true
+
+  say "更新服务端（B42 unstable）..."
+  install_pz_server
+
+  say "启动..."
+  systemctl start "${SERVICE_NAME}.service" || true
+  say "更新完成"
+}
+
 main() {
   local cmd="${1:-install}"
   shift || true
@@ -619,14 +632,19 @@ main() {
       [[ $# -eq 0 ]] || die "uninstall 不接受额外参数"
       do_uninstall
       ;;
+    update)
+      [[ $# -eq 0 ]] || die "update 不接受额外参数"
+      do_update
+      ;;
     help|-h|--help)
       cat <<EOF
 用法：
   sudo bash $0 install
+  sudo bash $0 update
   sudo bash $0 uninstall
 EOF
       ;;
-    *) die "未知命令：$cmd（install/uninstall）" ;;
+    *) die "未知命令：$cmd（install/update/uninstall）" ;;
   esac
 }
 
